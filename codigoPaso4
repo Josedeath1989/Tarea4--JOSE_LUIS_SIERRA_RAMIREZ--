@@ -1,0 +1,80 @@
+# Dataset k-means e hierarchical clustering
+# Jose Luis Sierra Ramirez
+# Analisis de Datos
+# Importar bibliotecas
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+from sklearn.decomposition import PCA
+
+# Cargar datos
+data = pd.read_csv('./Mall_Customers.csv')
+
+# 1. Análisis Exploratorio de Datos (EDA)
+print(data.head())
+print(data.info())
+print(data.describe())
+
+# 2. Preprocesamiento de Datos
+# Manejo de valores faltantes
+data.dropna(inplace=True)
+# Transformación de variables categóricas
+data = pd.get_dummies(data, columns=['columna_categorica'])
+# Escalado de variables numéricas
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data)
+
+# 3. Selección de Características (opcional)
+# Si se desea seleccionar características, hacerlo aquí
+
+# 4. Entrenamiento del Modelo
+# K-Means
+kmeans = KMeans(n_clusters=5, random_state=42)
+kmeans.fit(data_scaled)
+
+# Hierarchical Clustering
+# Puedes elegir diferentes métodos de enlace y métricas de distancia
+agg_clustering = AgglomerativeClustering(n_clusters=5, linkage='ward', affinity='euclidean')
+agg_clusters = agg_clustering.fit_predict(data_scaled)
+
+# 5. Evaluación del Modelo
+# K-Means
+silhouette_kmeans = silhouette_score(data_scaled, kmeans.labels_)
+calinski_kmeans = calinski_harabasz_score(data_scaled, kmeans.labels_)
+print("K-Means Silhouette Score:", silhouette_kmeans)
+print("K-Means Calinski-Harabasz Score:", calinski_kmeans)
+
+# Hierarchical Clustering
+silhouette_agg = silhouette_score(data_scaled, agg_clusters)
+calinski_agg = calinski_harabasz_score(data_scaled, agg_clusters)
+print("Hierarchical Clustering Silhouette Score:", silhouette_agg)
+print("Hierarchical Clustering Calinski-Harabasz Score:", calinski_agg)
+
+# 6. Visualización de Resultados
+# Visualización en 2D utilizando PCA
+pca = PCA(n_components=2)
+data_pca = pca.fit_transform(data_scaled)
+
+# Scatter plot K-Means
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=data_pca[:,0], y=data_pca[:,1], hue=kmeans.labels_, palette='viridis', legend='full')
+plt.title('K-Means Clustering')
+plt.xlabel('Componente Principal 1')
+plt.ylabel('Componente Principal 2')
+plt.show()
+
+# Scatter plot Hierarchical Clustering
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=data_pca[:,0], y=data_pca[:,1], hue=agg_clusters, palette='viridis', legend='full')
+plt.title('Hierarchical Clustering')
+plt.xlabel('Componente Principal 1')
+plt.ylabel('Componente Principal 2')
+plt.show()
+
+# 7. Interpretación y Documentación
+# Analiza los clusters obtenidos y documenta los resultados
+
